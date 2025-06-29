@@ -1,0 +1,11 @@
+GenAI models like GPT-4 and Claude don’t think—they predict the most probable next token based on the context they receive. If the context is weak, the output is generic. If the context is strong, the output feels intelligent.
+
+So, where does this context come from?
+
+There are three key types of context GenAI apps must manage:
+
+1️⃣ Conversational Context – Keeping track of chat history, previous responses, and user interactions.
+2️⃣ Situational Context – Information about the user, such as preferences, past purchases, or business-specific data.
+3️⃣ Semantic Context – Domain-specific knowledge retrieved based on meaning, not just keywords.
+
+Each of these requires different database technologies to store, retrieve, and process data efficiently.
