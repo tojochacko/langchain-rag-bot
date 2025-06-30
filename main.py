@@ -78,7 +78,7 @@ def main():
         model="llama3.2",
         temperature=0,
     )
-
+    
     # Prepare to use the OpenAI model
     # llm = ChatOpenAI(
     #     model_name="gpt-3.5-turbo",
@@ -99,10 +99,9 @@ def main():
             ("human", "{input}"),
         ]
     )
+    
     question_answer_chain = create_stuff_documents_chain(llm, prompt)
     chain = create_retrieval_chain(retriever, question_answer_chain)
-
-    #qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
     while True:
         question = input("Ask a question (or 'exit'): ").strip()
