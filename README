@@ -14,17 +14,20 @@ A Retrieval-Augmented Generation (RAG) chatbot built with LangChain that can pro
 ## Prerequisites
 
 ### Required Software
+
 - Python 3.8+
 - [Ollama](https://ollama.ai/) installed and running locally
 - Ollama models: `nomic-embed-text` and `llama3.2`
 
 ### Install Ollama Models
+
 ```bash
 ollama pull nomic-embed-text
 ollama pull llama3.2
 ```
 
 ### Python Dependencies
+
 ```bash
 pip install langchain langchain-community langchain-ollama langchain-openai
 pip install faiss-cpu python-dotenv
@@ -36,16 +39,17 @@ pip install pypdf beautifulsoup4 lxml  # For PDF and web support
 1. **Clone or download the project files**
 2. **Install dependencies** (see above)
 3. **Create environment file** (optional, for OpenAI):
-   ```bash
-   echo "OPENAI_API_KEY=your_api_key_here" > .env
-   ```
+
+```bash
+echo "OPENAI_API_KEY=your_api_key_here" > .env
+```
 
 ## Project Structure
 
 ```
 langchain-rag-bot/
 ├── document_processor.py    # Document processing and vector store creation
-├── chat_interface.py        # Interactive chat interface
+├── chat_interface.py        # Interactive chat interface  
 ├── README.md               # This file
 ├── .env                    # Environment variables (optional)
 ├── documents/              # Your document directory (optional)
@@ -92,30 +96,37 @@ python chat_interface.py
 ### Document Processing Options
 
 #### Basic Usage
+
 ```bash
 python document_processor.py
 ```
+
 - Automatically looks for `data.txt` in current directory
 - Scans current directory for PDF and CSV files
 
 #### Specific Files
+
 ```bash
 python document_processor.py --files file1.txt file2.pdf data.csv
 ```
 
 #### Directory Scanning
+
 ```bash
 python document_processor.py --dirs ./documents ./research_papers
 ```
+
 - Recursively scans directories for supported files
 - Supports: `.txt`, `.pdf`, `.csv`
 
 #### Website Loading
+
 ```bash
 python document_processor.py --urls https://docs.example.com https://blog.example.com
 ```
 
 #### Advanced Options
+
 ```bash
 python document_processor.py \
   --files data.txt \
@@ -149,6 +160,7 @@ Answer: Based on the provided context, the document discusses...
 ```
 
 #### Chat Commands
+
 - Type your question and press Enter
 - Type `exit` or `quit` to end the session
 - Empty input will prompt for a question
@@ -158,15 +170,17 @@ Answer: Based on the provided context, the document discusses...
 ### Using OpenAI Instead of Ollama
 
 1. **Set up environment variable**:
-   ```bash
-   echo "OPENAI_API_KEY=your_api_key_here" > .env
-   ```
+
+```bash
+echo "OPENAI_API_KEY=your_api_key_here" > .env
+```
 
 2. **Modify chat_interface.py**:
-   ```python
-   # Change this line in the main section
-   use_openai = True  # Set to True to use OpenAI
-   ```
+
+```python
+# Change this line in the main section
+use_openai = True  # Set to True to use OpenAI
+```
 
 ### Ollama Configuration
 
@@ -187,25 +201,25 @@ Answer: Based on the provided context, the document discusses...
 
 ### Common Issues
 
-1. **"Vector store not found" error**:
-   - Run `document_processor.py` first to create the vector store
+**1. "Vector store not found" error:**
+- Run `document_processor.py` first to create the vector store
 
-2. **Ollama connection error**:
-   - Ensure Ollama is running: `ollama serve`
-   - Check if models are installed: `ollama list`
+**2. Ollama connection error:**
+- Ensure Ollama is running: `ollama serve`
+- Check if models are installed: `ollama list`
 
-3. **PDF loading errors**:
-   - Install pypdf: `pip install pypdf`
-   - Ensure PDF files are not corrupted
+**3. PDF loading errors:**
+- Install pypdf: `pip install pypdf`
+- Ensure PDF files are not corrupted
 
-4. **Website loading errors**:
-   - Check internet connection
-   - Some websites may block automated access
-   - Install required packages: `pip install beautifulsoup4 lxml`
+**4. Website loading errors:**
+- Check internet connection
+- Some websites may block automated access
+- Install required packages: `pip install beautifulsoup4 lxml`
 
-5. **Memory issues with large documents**:
-   - Reduce chunk size: `--chunk-size 500`
-   - Process fewer documents at once
+**5. Memory issues with large documents:**
+- Reduce chunk size: `--chunk-size 500`
+- Process fewer documents at once
 
 ### Performance Tips
 
@@ -216,6 +230,7 @@ Answer: Based on the provided context, the document discusses...
 ## Example Workflows
 
 ### Academic Research
+
 ```bash
 # Process research papers and academic websites
 python document_processor.py \
@@ -226,6 +241,7 @@ python chat_interface.py
 ```
 
 ### Technical Documentation
+
 ```bash
 # Process API docs, manuals, and help sites
 python document_processor.py \
@@ -236,6 +252,7 @@ python chat_interface.py
 ```
 
 ### Business Documents
+
 ```bash
 # Process reports, spreadsheets, and company docs
 python document_processor.py \
