@@ -1,0 +1,254 @@
+# LangChain RAG Bot
+
+A Retrieval-Augmented Generation (RAG) chatbot built with LangChain that can process multiple document types and provide intelligent answers based on your document collection.
+
+## Features
+
+- **Multiple Document Support**: PDF, CSV, Text files, and websites
+- **Flexible Input Sources**: Individual files, directories, or web URLs
+- **Local LLM Support**: Uses Ollama for embeddings and chat (with OpenAI option)
+- **Persistent Vector Storage**: FAISS vector database for efficient retrieval
+- **Interactive Chat Interface**: Command-line chat interface for querying documents
+- **Modular Design**: Separate document processing and chat functionality
+
+## Prerequisites
+
+### Required Software
+- Python 3.8+
+- [Ollama](https://ollama.ai/) installed and running locally
+- Ollama models: `nomic-embed-text` and `llama3.2`
+
+### Install Ollama Models
+```bash
+ollama pull nomic-embed-text
+ollama pull llama3.2
+```
+
+### Python Dependencies
+```bash
+pip install langchain langchain-community langchain-ollama langchain-openai
+pip install faiss-cpu python-dotenv
+pip install pypdf beautifulsoup4 lxml  # For PDF and web support
+```
+
+## Installation
+
+1. **Clone or download the project files**
+2. **Install dependencies** (see above)
+3. **Create environment file** (optional, for OpenAI):
+   ```bash
+   echo "OPENAI_API_KEY=your_api_key_here" > .env
+   ```
+
+## Project Structure
+
+```
+langchain-rag-bot/
+├── document_processor.py    # Document processing and vector store creation
+├── chat_interface.py        # Interactive chat interface
+├── README.md               # This file
+├── .env                    # Environment variables (optional)
+├── documents/              # Your document directory (optional)
+│   ├── manual.pdf
+│   ├── data.csv
+│   └── notes.txt
+└── vectors/                # Generated vector store (auto-created)
+    └── faiss_index/
+```
+
+## Quick Start
+
+### 1. Process Your Documents
+
+First, create the vector store from your documents:
+
+```bash
+# Process files in current directory
+python document_processor.py
+
+# Process specific files
+python document_processor.py --files data.txt document.pdf report.csv
+
+# Process entire directories
+python document_processor.py --dirs ./documents ./research
+
+# Load from websites
+python document_processor.py --urls https://docs.python.org/3/
+
+# Combine multiple sources
+python document_processor.py --files manual.pdf --dirs ./docs --urls https://example.com
+```
+
+### 2. Start Chatting
+
+Launch the interactive chat interface:
+
+```bash
+python chat_interface.py
+```
+
+## Usage Guide
+
+### Document Processing Options
+
+#### Basic Usage
+```bash
+python document_processor.py
+```
+- Automatically looks for `data.txt` in current directory
+- Scans current directory for PDF and CSV files
+
+#### Specific Files
+```bash
+python document_processor.py --files file1.txt file2.pdf data.csv
+```
+
+#### Directory Scanning
+```bash
+python document_processor.py --dirs ./documents ./research_papers
+```
+- Recursively scans directories for supported files
+- Supports: `.txt`, `.pdf`, `.csv`
+
+#### Website Loading
+```bash
+python document_processor.py --urls https://docs.example.com https://blog.example.com
+```
+
+#### Advanced Options
+```bash
+python document_processor.py \
+  --files data.txt \
+  --dirs ./documents \
+  --urls https://example.com \
+  --chunk-size 500 \
+  --chunk-overlap 100 \
+  --index-path custom/vector/path
+```
+
+### Customization Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--chunk-size` | 1000 | Size of text chunks for processing |
+| `--chunk-overlap` | 200 | Overlap between consecutive chunks |
+| `--index-path` | `vectors/faiss_index` | Path to save vector store |
+
+### Chat Interface
+
+The chat interface provides an interactive way to query your documents:
+
+```
+=== RAG Chat Interface ===
+Ask questions about your documents. Type 'exit' or 'quit' to stop.
+--------------------------------------------------
+
+Ask a question: What is the main topic of the document?
+
+Answer: Based on the provided context, the document discusses...
+```
+
+#### Chat Commands
+- Type your question and press Enter
+- Type `exit` or `quit` to end the session
+- Empty input will prompt for a question
+
+## Configuration
+
+### Using OpenAI Instead of Ollama
+
+1. **Set up environment variable**:
+   ```bash
+   echo "OPENAI_API_KEY=your_api_key_here" > .env
+   ```
+
+2. **Modify chat_interface.py**:
+   ```python
+   # Change this line in the main section
+   use_openai = True  # Set to True to use OpenAI
+   ```
+
+### Ollama Configuration
+
+- **Default base URL**: `http://localhost:11434`
+- **Required models**: `nomic-embed-text`, `llama3.2`
+- **To change models**: Edit the model names in the respective files
+
+## Supported File Types
+
+| Type | Extension | Loader Used |
+|------|-----------|-------------|
+| Text | `.txt` | TextLoader |
+| PDF | `.pdf` | PyPDFLoader |
+| CSV | `.csv` | CSVLoader |
+| Web | URLs | WebBaseLoader |
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"Vector store not found" error**:
+   - Run `document_processor.py` first to create the vector store
+
+2. **Ollama connection error**:
+   - Ensure Ollama is running: `ollama serve`
+   - Check if models are installed: `ollama list`
+
+3. **PDF loading errors**:
+   - Install pypdf: `pip install pypdf`
+   - Ensure PDF files are not corrupted
+
+4. **Website loading errors**:
+   - Check internet connection
+   - Some websites may block automated access
+   - Install required packages: `pip install beautifulsoup4 lxml`
+
+5. **Memory issues with large documents**:
+   - Reduce chunk size: `--chunk-size 500`
+   - Process fewer documents at once
+
+### Performance Tips
+
+- **Chunk Size**: Smaller chunks (500-800) for precise answers, larger chunks (1000-1500) for more context
+- **Overlap**: 10-20% of chunk size typically works well
+- **File Organization**: Group related documents in separate directories for better organization
+
+## Example Workflows
+
+### Academic Research
+```bash
+# Process research papers and academic websites
+python document_processor.py \
+  --dirs ./research_papers \
+  --urls https://arxiv.org/abs/2301.00001 https://scholar.google.com
+
+python chat_interface.py
+```
+
+### Technical Documentation
+```bash
+# Process API docs, manuals, and help sites
+python document_processor.py \
+  --files api_manual.pdf user_guide.txt \
+  --urls https://docs.python.org/3/ https://fastapi.tiangolo.com
+
+python chat_interface.py
+```
+
+### Business Documents
+```bash
+# Process reports, spreadsheets, and company docs
+python document_processor.py \
+  --files quarterly_report.pdf \
+  --dirs ./company_docs ./financial_reports
+
+python chat_interface.py
+```
+
+## Contributing
+
+Feel free to submit issues, feature requests, or pull requests to improve this RAG bot.
+
+## License
+
+This project is open source. Please check individual package licenses for dependencies.
