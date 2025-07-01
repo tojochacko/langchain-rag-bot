@@ -91,40 +91,6 @@ Launch the interactive chat interface:
 python chat_interface.py
 ```
 
-## Usage Guide
-
-### Document Processing Options
-
-#### Basic Usage
-
-```bash
-python document_processor.py
-```
-
-- Automatically looks for `data.txt` in current directory
-- Scans current directory for PDF and CSV files
-
-#### Specific Files
-
-```bash
-python document_processor.py --files file1.txt file2.pdf data.csv
-```
-
-#### Directory Scanning
-
-```bash
-python document_processor.py --dirs ./documents ./research_papers
-```
-
-- Recursively scans directories for supported files
-- Supports: `.txt`, `.pdf`, `.csv`
-
-#### Website Loading
-
-```bash
-python document_processor.py --urls https://docs.example.com https://blog.example.com
-```
-
 #### Advanced Options
 
 ```bash
@@ -149,38 +115,6 @@ python document_processor.py \
 
 The chat interface provides an interactive way to query your documents:
 
-```
-=== RAG Chat Interface ===
-Ask questions about your documents. Type 'exit' or 'quit' to stop.
---------------------------------------------------
-
-Ask a question: What is the main topic of the document?
-
-Answer: Based on the provided context, the document discusses...
-```
-
-#### Chat Commands
-
-- Type your question and press Enter
-- Type `exit` or `quit` to end the session
-- Empty input will prompt for a question
-
-## Configuration
-
-### Using OpenAI Instead of Ollama
-
-1. **Set up environment variable**:
-
-```bash
-echo "OPENAI_API_KEY=your_api_key_here" > .env
-```
-
-2. **Modify chat_interface.py**:
-
-```python
-# Change this line in the main section
-use_openai = True  # Set to True to use OpenAI
-```
 
 ### Ollama Configuration
 
@@ -197,70 +131,6 @@ use_openai = True  # Set to True to use OpenAI
 | CSV | `.csv` | CSVLoader |
 | Web | URLs | WebBaseLoader |
 
-## Troubleshooting
-
-### Common Issues
-
-**1. "Vector store not found" error:**
-- Run `document_processor.py` first to create the vector store
-
-**2. Ollama connection error:**
-- Ensure Ollama is running: `ollama serve`
-- Check if models are installed: `ollama list`
-
-**3. PDF loading errors:**
-- Install pypdf: `pip install pypdf`
-- Ensure PDF files are not corrupted
-
-**4. Website loading errors:**
-- Check internet connection
-- Some websites may block automated access
-- Install required packages: `pip install beautifulsoup4 lxml`
-
-**5. Memory issues with large documents:**
-- Reduce chunk size: `--chunk-size 500`
-- Process fewer documents at once
-
-### Performance Tips
-
-- **Chunk Size**: Smaller chunks (500-800) for precise answers, larger chunks (1000-1500) for more context
-- **Overlap**: 10-20% of chunk size typically works well
-- **File Organization**: Group related documents in separate directories for better organization
-
-## Example Workflows
-
-### Academic Research
-
-```bash
-# Process research papers and academic websites
-python document_processor.py \
-  --dirs ./research_papers \
-  --urls https://arxiv.org/abs/2301.00001 https://scholar.google.com
-
-python chat_interface.py
-```
-
-### Technical Documentation
-
-```bash
-# Process API docs, manuals, and help sites
-python document_processor.py \
-  --files api_manual.pdf user_guide.txt \
-  --urls https://docs.python.org/3/ https://fastapi.tiangolo.com
-
-python chat_interface.py
-```
-
-### Business Documents
-
-```bash
-# Process reports, spreadsheets, and company docs
-python document_processor.py \
-  --files quarterly_report.pdf \
-  --dirs ./company_docs ./financial_reports
-
-python chat_interface.py
-```
 
 ## Contributing
 
