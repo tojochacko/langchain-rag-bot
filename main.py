@@ -1,4 +1,4 @@
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader, PyPDFLoader, CSVLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -29,12 +29,42 @@ def get_embedding_model():
 
 #     return embeddings
 
-def load_document(text_path: str):
+def load_document(file_paths: list[str]):
     """
-    Split text into chunks of `chunk_size` with `chunk_overlap` overlap.
+    Load documents from multiple file paths. Supports PDF, CSV, and TXT files.
+    File type is determined by the file extension.
+
+    Args:
+        file_paths: List of paths to document files (.pdf, .csv, or .txt)
+
+    Returns:
+        List of all loaded documents from all files
+
+    Raises:
+        ValueError: If any file type is not supported
     """
-    loader = TextLoader(text_path)
-    return loader.load()
+    all_docs = []
+
+    for file_path in file_paths:
+        # Get file extension
+        _, ext = os.path.splitext(file_path)
+        ext = ext.lower()
+
+        # Select appropriate loader based on file extension
+        if ext == '.pdf':
+            loader = PyPDFLoader(file_path)
+        elif ext == '.csv':
+            loader = CSVLoader(file_path)
+        elif ext == '.txt':
+            loader = TextLoader(file_path)
+        else:
+            raise ValueError(f"Unsupported file type: {ext}. Supported types: .pdf, .csv, .txt")
+
+        # Load documents from this file and add to the collection
+        docs = loader.load()
+        all_docs.extend(docs)
+
+    return all_docs
 
 def get_vector_store(docs, index_path: str):
     """
@@ -66,10 +96,11 @@ def main():
     # Load environment variables
     load_dotenv() # expects OPENAI_API_KEY in .env
 
-    text_path = "data.txt"          # Ensure this file exists in the project root
+    # List of files to process - can include PDF, CSV, or TXT files
+    file_paths = ["data.txt"]          # Add more files as needed: ["data.txt", "document.pdf", "data.csv"]
     index_path = "vectors/faiss_index"      # Folder where the FAISS index is stored
 
-    docs = load_document(text_path)
+    docs = load_document(file_paths)
     vector_db = get_vector_store(docs, index_path)
 
     retriever = vector_db.as_retriever()
