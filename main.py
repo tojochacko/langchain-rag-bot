@@ -1,10 +1,11 @@
 from langchain_community.document_loaders import TextLoader, PyPDFLoader, CSVLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_ollama import OllamaEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 import faiss
 import os
+import logging
 
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
@@ -12,12 +13,23 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
+# Configure logging - set to WARNING to suppress INFO logs
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 
 def get_embedding_model():
     """
-    Get Ollama embedding model object.
+    Get OpenAI embedding model object.
+    Uses text-embedding-3-small by default (cost-effective and performant).
+    Requires OPENAI_API_KEY environment variable.
     """
-    return OllamaEmbeddings(model="nomic-embed-text", base_url="http://localhost:11434")
+    return OpenAIEmbeddings(
+        model="text-embedding-3-small",
+        openai_api_key=os.getenv("OPENAI_API_KEY")
+    )
 
 # def get_embeddings(model_emb, docs):
 #     """
@@ -62,8 +74,10 @@ def load_document(file_paths: list[str]):
 
         # Load documents from this file and add to the collection
         docs = loader.load()
+        logging.info(f"Loaded {len(docs)} document(s) from {file_path}")
         all_docs.extend(docs)
 
+    logging.info(f"Total documents loaded: {len(all_docs)}")
     return all_docs
 
 def get_vector_store(docs, index_path: str):
@@ -74,11 +88,13 @@ def get_vector_store(docs, index_path: str):
 
     # Check if the index already exists
     if os.path.exists(index_path):
+        logging.info(f"Loading existing FAISS index from {index_path}")
         return FAISS.load_local(
-            index_path, 
+            index_path,
             ollama_emb,
             allow_dangerous_deserialization=True  # 👈 acknowledge trusted pickle
             )
+    logging.info(f"Building new FAISS index at {index_path}")
     return build_vector_store(docs, index_path, ollama_emb)
 
 def build_vector_store(docs, index_path: str, model_emb):
@@ -88,16 +104,22 @@ def build_vector_store(docs, index_path: str, model_emb):
     """
     # embeddings = get_embeddings(model_emb, docs)
 
+    logging.info(f"Creating FAISS vector store from {len(docs)} documents")
     vector_db = FAISS.from_documents(docs, model_emb)
     vector_db.save_local(index_path)
+    logging.info(f"Vector store saved to {index_path}")
     return vector_db
 
 def main():
     # Load environment variables
-    load_dotenv() # expects OPENAI_API_KEY in .env
+    load_dotenv()  # expects OPENAI_API_KEY in .env
+
+    # Validate OpenAI API key
+    if not os.getenv("OPENAI_API_KEY"):
+        raise ValueError("OPENAI_API_KEY not found in environment variables. Please add it to your .env file.")
 
     # List of files to process - can include PDF, CSV, or TXT files
-    file_paths = ["data.txt"]          # Add more files as needed: ["data.txt", "document.pdf", "data.csv"]
+    file_paths = ["documents/gap-analysis-interview.csv"]          # Add more files as needed: ["data.txt", "document.pdf", "data.csv"]
     index_path = "vectors/faiss_index"      # Folder where the FAISS index is stored
 
     docs = load_document(file_paths)
@@ -105,23 +127,20 @@ def main():
 
     retriever = vector_db.as_retriever()
 
-    llm = ChatOllama(
-        model="llama3.2",
+    # Use OpenAI's cheapest model: gpt-4o-mini
+    # gpt-4o-mini is the most cost-effective option ($0.150/1M input tokens, $0.600/1M output tokens)
+    # Perfect for summarization and basic analysis tasks
+    llm = ChatOpenAI(
+        model="gpt-4o-mini",
         temperature=0,
+        openai_api_key=os.getenv("OPENAI_API_KEY"),
     )
-    
-    # Prepare to use the OpenAI model
-    # llm = ChatOpenAI(
-    #     model_name="gpt-3.5-turbo",
-    #     temperature=0,
-    #     openai_api_key=os.getenv("OPENAI_API_KEY"),  # ← read the env var
-    # )
 
     # Define the prompt
     system_prompt = (
-        "Use the given context to answer the question. "
+        "You are a helpful assistant that answers questions based on the provided context. "
         "If you don't know the answer, say you don't know. "
-        "Use three sentence maximum and keep the answer concise. "
+        "Do not make up an answer. "
         "Context: {context}"
     )
     prompt = ChatPromptTemplate.from_messages(
@@ -138,6 +157,7 @@ def main():
         question = input("Ask a question (or 'exit'): ").strip()
         if question.lower() in {"exit", "quit"}:
             break
+
         response = chain.invoke({"input": question})
         print("Answer:", response['answer'])
 
